@@ -1,5 +1,4 @@
-# chainsaws
-Power tools for Amazon Web Services
+![Chainsaws](https://dl.dropboxusercontent.com/u/1770482/Chainsaws.png)
 
 ## Purpose
 
