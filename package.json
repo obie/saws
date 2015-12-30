@@ -1,6 +1,6 @@
 {
   "name": "chainsaws",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Provides abstraction layer for core AWS application services",
   "main": "lib/chainsaws.js",
   "scripts": {
