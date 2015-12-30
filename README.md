@@ -1,15 +1,17 @@
-![Chainsaws](https://dl.dropboxusercontent.com/u/1770482/Chainsaws.png)
+# Saws
+
+Simple AWS abstraction library for Node.
 
 ## Purpose
 
-Provides abstraction layer for core AWS application services such as SNS and SQS so that your microservices don't end up tightly coupled to the platform. Helps immensely with testability and other concerns related to maintaining a so-called hexagonal architecture. <http://alistair.cockburn.us/Hexagonal+architecture>
+Provides a flexible and testable abstraction layer for core AWS application services such as SNS and SQS so that your code doesn't end up tightly coupled to the platform. Helps immensely with testability and other concerns related to maintaining a so-called hexagonal architecture. <http://alistair.cockburn.us/Hexagonal+architecture>
 
 Perfect for Serverless architecture style. Learn more at <http://leanpub.com/serverless>
 
 ## Installing
 
 ```sh
-npm install chainsaws
+npm install saws
 ```
 
 ## Usage
@@ -18,7 +20,7 @@ Initialize with the `AWS` sdk instance.
 
 ```javascript
 var AWS = require('aws-sdk');
-var Chainsaws = new require('chainsaws')(AWS);
+var Saws = new require('saws')(AWS);
 ```
 
 ### Stage Variable
@@ -27,17 +29,17 @@ Set a value for the stage variable to indicate which environment you're running 
 
 ```javascript
 // defaults to 'development'
-Chainsaws.stage = process.env.SERVERLESS_STAGE;
+Saws.stage = process.env.SERVERLESS_STAGE;
 ```
 
-Instantiate chainsaws for topics and queues as needed.
+Instantiate saws for topics and queues as needed.
 
 ### SNS (Simple Notification Service)
 
 Start by instantiating a topic object.
 
 ```javascript
-var topic = new Chainsaws.Topic("NewOrders");
+var topic = new Saws.Topic("NewOrders");
 ```
 
 #### Automatic Topic Creation
@@ -61,7 +63,7 @@ The callback is invoked when a response from the service is returned.  The conte
 Payload is automatically run through `JSON.stringify()`.
 
 ```javascript
-var topic = new Chainsaws.Topic("NewOrders");
+var topic = new Saws.Topic("NewOrders");
 topic.publish({
   NewOrder: {
       userId: user.userId,
@@ -77,7 +79,7 @@ topic.publish({
 _coming soon_
 
 ```javascript
-var queue = new Chainsaws.Queue(url);
+var queue = new Saws.Queue(url);
 queue.publish({foo: "bar"}, done);
 ```
 

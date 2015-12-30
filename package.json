@@ -1,14 +1,14 @@
 {
-  "name": "chainsaws",
-  "version": "0.0.5",
-  "description": "Provides abstraction layer to really tighten up use of Asynchronous Messaging style architecture with AWS services",
-  "main": "lib/chainsaws.js",
+  "name": "saws",
+  "version": "0.0.1",
+  "description": "Simple abstraction layer for AWS services",
+  "main": "lib/saws.js",
   "scripts": {
     "test": "mocha tests/all"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/obie/chainsaws.git"
+    "url": "git+https://github.com/obie/saws.git"
   },
   "keywords": [
     "aws"
@@ -16,9 +16,9 @@
   "author": "Obie Fernandez",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/obie/chainsaws/issues"
+    "url": "https://github.com/obie/saws/issues"
   },
-  "homepage": "https://github.com/obie/chainsaws#readme",
+  "homepage": "https://github.com/obie/saws#readme",
   "dependencies": {},
   "devDependencies": {
     "aws-sdk": "^2.2.26",
