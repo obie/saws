@@ -27,16 +27,16 @@ describe('SNS functions', function() {
 
   describe('publish', function() {
     it('should put a message on a topic', function(done) {
-      var topicName = "NewOrders";
-      snsStub.callsArgWith(1, null, {TopicArn: topicName});
+      var topicArn = "arn:aws:sns:us-east-1:501293600930:NewOrders-development";
+      snsStub.callsArgWith(1, null, {TopicArn: topicArn});
 
       var publishStub = sinon.stub(Chainsaws.sns, 'publish');
-      
-      var topic = new Chainsaws.Topic(topicName);
+    
+      var topic = new Chainsaws.Topic("NewOrders");
       topic.publish({foo: "bar"});
 
       expect(publishStub).to.have.been.calledWith({
-        TopicArn: topicName,
+        TopicArn: topicArn,
         Message: "{\"foo\":\"bar\"}"
       });
       done();
