@@ -61,11 +61,20 @@ The callback is invoked when a response from the service is returned.  The conte
 Payload is automatically run through `JSON.stringify()`.
 
 ```javascript
-var topic = new Chainsaws.Topic(topicArn);
-topic.publish({foo: "bar"}, done);
+var topic = new Chainsaws.Topic("NewOrders");
+topic.publish({
+  NewOrder: {
+      userId: user.userId,
+      deliveryAddress: user.deliveryAddress,
+      stripeSource: user.stripeSource,
+      preferences: user.preferences
+    }
+}, done);
 ```
 
 ### SQS (Simple Queue Service)
+
+_coming soon_
 
 ```javascript
 var queue = new Chainsaws.Queue(url);
