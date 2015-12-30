@@ -32,7 +32,7 @@ Set a value for the stage variable to indicate which environment you're running 
 Saws.stage = process.env.SERVERLESS_STAGE;
 ```
 
-Instantiate saws for topics and queues as needed.
+Now just instantiate saws for topics and queues as needed in your code. Enjoy the simple interface.
 
 ### SNS (Simple Notification Service)
 
@@ -44,7 +44,7 @@ var topic = new Saws.Topic("NewOrders");
 
 #### Automatic Topic Creation
 
-Creating a `Topic` will automatically create an SNS Topic on AWS if it does not already exist. The value of `Saw.stage` is appended to the topic name.
+Creating a `Topic` will automatically create an SNS Topic on AWS if it does not already exist. The value of `Saws.stage` is appended to the topic name.
 
 #### Sending messages
 
@@ -85,4 +85,4 @@ queue.publish({foo: "bar"}, done);
 
 ## Debug
 
-Set `CHAINSAWS_DEBUG` to true in your environment to enable debug output to the console.
+Set `SAWS_DEBUG` to true in your environment to enable debug output to the console.
