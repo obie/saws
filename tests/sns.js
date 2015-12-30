@@ -17,7 +17,7 @@ describe('SNS functions', function() {
     it('tries to create a topic (in case it does not exist yet)', function(done) {
       var topic = new Chainsaws.Topic("NewOrders");
       topic.publish("whatever"); // topic creation is lazy
-      
+
       expect(snsStub).to.have.been.calledWith({
         Name: "NewOrders-test"
       });
@@ -27,15 +27,16 @@ describe('SNS functions', function() {
 
   describe('publish', function() {
     it('should put a message on a topic', function(done) {
-      snsStub.callsArgWith(1, null, {TopicArn: "someTopicArn"});
+      var topicName = "NewOrders";
+      snsStub.callsArgWith(1, null, {TopicArn: topicName});
 
       var publishStub = sinon.stub(Chainsaws.sns, 'publish');
-      var topicArn = "someTopicArn";
-      var topic = new Chainsaws.Topic(topicArn);
+      
+      var topic = new Chainsaws.Topic(topicName);
       topic.publish({foo: "bar"});
 
       expect(publishStub).to.have.been.calledWith({
-        TopicArn: topicArn,
+        TopicArn: topicName,
         Message: "{\"foo\":\"bar\"}"
       });
       done();
