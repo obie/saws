@@ -1,7 +1,7 @@
 {
   "name": "chainsaws",
-  "version": "0.0.3",
-  "description": "Provides abstraction layer for core AWS application services",
+  "version": "0.0.4",
+  "description": "Provides abstraction layer to really tighten up use of Asynchronous Messaging style architecture with AWS services",
   "main": "lib/chainsaws.js",
   "scripts": {
     "test": "mocha tests/all"
