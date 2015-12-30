@@ -44,7 +44,7 @@ var topic = new Saws.Topic("NewOrders");
 
 #### Automatic Topic Creation
 
-Creating a `Topic` will automatically create an SNS Topic on AWS if it does not already exist. The value of `Chainsaw.stage` is appended to the topic name.
+Creating a `Topic` will automatically create an SNS Topic on AWS if it does not already exist. The value of `Saw.stage` is appended to the topic name.
 
 #### Sending messages
 
