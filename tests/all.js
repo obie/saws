@@ -6,5 +6,6 @@ describe('All Tests', function() {
   after(function() {});
 
   require('./sns.js');
+  require('./sqs.js');
 
 });
