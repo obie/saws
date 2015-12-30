@@ -1,7 +1,7 @@
 {
   "name": "chainsaws",
   "version": "0.0.2",
-  "description": "Provides abstraction layer for core AWS application services such as DynamoDB, SNS, and SQS",
+  "description": "Provides abstraction layer for core AWS application services",
   "main": "lib/chainsaws.js",
   "scripts": {
     "test": "mocha tests/all"
