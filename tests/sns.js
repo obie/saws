@@ -15,8 +15,12 @@ describe('SNS functions', function() {
 
   describe('new Topic', function() {
     it('tries to create a topic (in case it does not exist yet)', function(done) {
-      new Chainsaws.Topic("NewOrders");
-      expect(snsStub).to.have.been.calledWith({ Name: "NewOrders-test" });
+      var topic = new Chainsaws.Topic("NewOrders");
+      topic.publish("whatever"); // topic creation is lazy
+      
+      expect(snsStub).to.have.been.calledWith({
+        Name: "NewOrders-test"
+      });
       done();
     });
   });
@@ -25,15 +29,16 @@ describe('SNS functions', function() {
     it('should put a message on a topic', function(done) {
       snsStub.callsArgWith(1, null, {TopicArn: "someTopicArn"});
 
-      var publishStub = sinon.stub(Chainsaws.sns, 'publish', function(obj, cb) {cb()});
+      var publishStub = sinon.stub(Chainsaws.sns, 'publish');
       var topicArn = "someTopicArn";
       var topic = new Chainsaws.Topic(topicArn);
-      topic.publish({foo: "bar"}, done);
+      topic.publish({foo: "bar"});
 
       expect(publishStub).to.have.been.calledWith({
-            TopicArn: topicArn,
-            Message: "{\"foo\":\"bar\"}"
-          }, done);
+        TopicArn: topicArn,
+        Message: "{\"foo\":\"bar\"}"
+      });
+      done();
     });
   });
 });

@@ -70,4 +70,8 @@ topic.publish({foo: "bar"}, done);
 ```javascript
 var queue = new Chainsaws.Queue(url);
 queue.publish({foo: "bar"}, done);
+
+## Debug
+
+Set `CHAINSAWS_DEBUG` to true in your environment to enable debug output to the console.
 ```

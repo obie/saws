@@ -1,6 +1,6 @@
 {
   "name": "chainsaws",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Provides abstraction layer to really tighten up use of Asynchronous Messaging style architecture with AWS services",
   "main": "lib/chainsaws.js",
   "scripts": {
