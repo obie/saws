@@ -26,7 +26,7 @@ var tableDefinition = {
 describe('DynamoDB functions', function() {
   var createTableStub = sinon.stub(Saws.ddb, 'createTable');
   var describeTableStub = sinon.stub(Saws.ddb, 'describeTable');
-  var putItemStub = sinon.stub(Saws.doc, 'putItem');
+  var putItemStub = sinon.stub(Saws.doc, 'put');
 
   describe('new Table', function() {
 
