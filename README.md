@@ -4,7 +4,7 @@ Simple AWS abstraction library for Node.
 
 ## Purpose
 
-Provides a flexible and testable abstraction layer for core AWS application services such as SNS and SQS so that your code doesn't end up tightly coupled to the platform. Helps immensely with testability and other concerns related to maintaining a so-called hexagonal architecture. <http://alistair.cockburn.us/Hexagonal+architecture>
+Provides a flexible and testable abstraction layer for core AWS application services such as DynamoDB, SNS and SQS so that your code doesn't end up as tightly coupled to the platform. Helps immensely with testability and other concerns related to maintaining a so-called hexagonal architecture. <http://alistair.cockburn.us/Hexagonal+architecture>
 
 Perfect for Serverless architecture style. Learn more at <http://leanpub.com/serverless>
 
@@ -32,7 +32,47 @@ Set a value for the stage variable to indicate which environment you're running 
 Saws.stage = process.env.SERVERLESS_STAGE;
 ```
 
-Now just instantiate saws for topics and queues as needed in your code. Enjoy the simple interface.
+Now just instantiate saws for tables, topics and queues as needed in your code. Enjoy the simple interface.
+
+### DynamoDB
+
+Define table params as per Dynamo's `createTable` specification. [link](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property)
+
+```javascript
+var STRIPE_CUSTOMERS_PARAMS = {
+  TableName: "StripeCustomers",
+  KeySchema: [
+    {AttributeName: 'IdentityId', KeyType: 'HASH'},
+    {AttributeName: 'StripeCustomerId', KeyType: 'RANGE'}
+  ],
+  AttributeDefinitions: [
+    {AttributeName: 'IdentityId', AttributeType: 'S'},
+    {AttributeName: 'StripeCustomerId', AttributeType: 'S'}
+  ],
+  ProvisionedThroughput: { ReadCapacityUnits: 2, WriteCapacityUnits: 1 }
+};
+```
+
+Then instantiate a `Saws.Table` object using the params.
+
+```javascript
+var customers = new Saws.Table(STRIPE_CUSTOMERS_PARAMS);
+```
+
+Use the table instance to save records.
+
+```javascript
+ customers.save({
+  "IdentityId": "id0000001",
+  "StripeCustomerId": "cus_00000001"
+}, function(err, data) {
+  ...
+});
+```
+
+The `save` operation is asynchronous. It takes an object and a callback to be invoked when the operation completes. The object parameter must contain top-level key(s) matching your `KeySchema` or the operation will fail.
+
+Note: As with all Saws, creation of the underlying resource is automatic. In this case, when saving a record, if the table does not already exist, Saws will create it and wait for it to be available before invoking the callback.
 
 ### SNS (Simple Notification Service)
 

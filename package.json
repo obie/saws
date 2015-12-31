@@ -1,6 +1,6 @@
 {
   "name": "saws",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Simple abstraction layer for AWS services",
   "main": "lib/saws.js",
   "scripts": {
@@ -19,7 +19,10 @@
     "url": "https://github.com/obie/saws/issues"
   },
   "homepage": "https://github.com/obie/saws#readme",
-  "dependencies": {},
+  "dependencies": {
+    "dynamodb-doc": "^1.0.0",
+    "lodash": "^3.10.1"
+  },
   "devDependencies": {
     "aws-sdk": "^2.2.26",
     "chai": "^3.2.0",
