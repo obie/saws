@@ -26,7 +26,7 @@ var tableDefinition = {
 describe('DynamoDB functions', function() {
   var createTableStub = sinon.stub(Saws.ddb, 'createTable');
   var describeTableStub = sinon.stub(Saws.ddb, 'describeTable');
-  //var putStub = sinon.stub(Saws.ddb, 'put');
+  var putItemStub = sinon.stub(Saws.doc, 'putItem');
 
   describe('new Table', function() {
 
@@ -35,32 +35,34 @@ describe('DynamoDB functions', function() {
       describeTableStub.onFirstCall().callsArgWith(1, null, {Table: { TableStatus: 'CREATING'}});
       describeTableStub.onSecondCall().callsArgWith(1, null, {Table: { TableStatus: 'CREATING'}});
       describeTableStub.onThirdCall().callsArgWith(1, null, {Table: { TableStatus: 'ACTIVE'}});
+      putItemStub.callsArgWith(1, null, {});
 
       var customers = new Saws.Table(tableDefinition);
       customers.save({
         "IdentityId": "id0000001",
         "StripeCustomerId": "cus_00000001"
       }, done);
-      // expect(createTableStub).to.have.been.calledWith(tableDefinition);
+      expect(createTableStub).to.have.been.calledWith(tableDefinition);
     });
 
 
     it('does not break when table already exists', function(done) {
       createTableStub.callsArgWith(1, {message: 'Table already exists'});
+      putItemStub.callsArgWith(1, null, {});
 
       var customers = new Saws.Table(tableDefinition);
       customers.save({
         "IdentityId": "id0000001",
         "StripeCustomerId": "cus_00000001"
       }, done);
-      // expect(createTableStub).to.have.been.calledWith(tableDefinition);
+      expect(createTableStub).to.have.been.calledWith(tableDefinition);
     });
   });
 
   describe('save', function() {
     it('should save an object', function(done) {
       createTableStub.callsArgWith(1, {message: 'Table already exists'});
-      //putStub.callsArgWith(1, null, {TopicArn: topicArn});
+      putItemStub.callsArgWith(1, null, {});
 
       var customers = new Saws.Table(tableDefinition);
       customers.save({

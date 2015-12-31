@@ -53,7 +53,7 @@ var STRIPE_CUSTOMERS_PARAMS = {
 };
 ```
 
-Then instantiate a `Saws.Table` object using the params.
+Then instantiate a `Saws.Table` object using the params. Note that stage name is appended to the name of the table created.
 
 ```javascript
 var customers = new Saws.Table(STRIPE_CUSTOMERS_PARAMS);
@@ -62,7 +62,7 @@ var customers = new Saws.Table(STRIPE_CUSTOMERS_PARAMS);
 Use the table instance to save records.
 
 ```javascript
- customers.save({
+customers.save({
   "IdentityId": "id0000001",
   "StripeCustomerId": "cus_00000001"
 }, function(err, data) {
@@ -70,9 +70,9 @@ Use the table instance to save records.
 });
 ```
 
-The `save` operation is asynchronous. It takes an object and a callback to be invoked when the operation completes. The object parameter must contain top-level key(s) matching your `KeySchema` or the operation will fail.
+The `save` operation is asynchronous. It takes an object and a callback to be invoked when the operation completes. The object parameter must contain top-level key(s) matching your `KeySchema` or the operation will fail. The object parameter may have nested object structures and they will be saved properly similar to the way that MongoDB and other document databases work.
 
-Note: As with all Saws, creation of the underlying resource is automatic. In this case, when saving a record, if the table does not already exist, Saws will create it and wait for it to be available before invoking the callback.
+Note: As with all Saws, creation of the underlying resource is automatic. In this case, when saving a record, if the DynamoDB table does not already exist, Saws will create it and wait for it to be available before proceeding with the operation.
 
 ### SNS (Simple Notification Service)
 
@@ -117,11 +117,6 @@ topic.publish({
 ### SQS (Simple Queue Service)
 
 _coming soon_
-
-```javascript
-var queue = new Saws.Queue(url);
-queue.publish({foo: "bar"}, done);
-```
 
 ## Debug
 
