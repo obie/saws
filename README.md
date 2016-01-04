@@ -76,7 +76,7 @@ Note: As with all Saws, creation of the underlying resource is automatic. In thi
 
 #### lookup(params, cb)
 
-Use the table instance to save records.
+Use the table instance to retrieve records.
 
 ```javascript
 customers.lookup({"IdentityId": "id0000001"}, function(err, data) {
