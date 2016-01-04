@@ -43,11 +43,9 @@ var STRIPE_CUSTOMERS_PARAMS = {
   TableName: "StripeCustomers",
   KeySchema: [
     {AttributeName: 'IdentityId', KeyType: 'HASH'},
-    {AttributeName: 'StripeCustomerId', KeyType: 'RANGE'}
   ],
   AttributeDefinitions: [
-    {AttributeName: 'IdentityId', AttributeType: 'S'},
-    {AttributeName: 'StripeCustomerId', AttributeType: 'S'}
+    {AttributeName: 'IdentityId', AttributeType: 'S'}
   ],
   ProvisionedThroughput: { ReadCapacityUnits: 2, WriteCapacityUnits: 1 }
 };
@@ -58,6 +56,8 @@ Then instantiate a `Saws.Table` object using the params. Note that stage name is
 ```javascript
 var customers = new Saws.Table(STRIPE_CUSTOMERS_PARAMS);
 ```
+
+#### save(item, cb)
 
 Use the table instance to save records.
 
@@ -81,6 +81,18 @@ Start by instantiating a topic object.
 ```javascript
 var topic = new Saws.Topic("NewOrders");
 ```
+
+#### lookup(params, cb)
+
+Use the table instance to save records.
+
+```javascript
+customers.lookup({"IdentityId": "id0000001"}, function(err, data) {
+  console.log(data) // => { "IdentityId": "id0000001", "StripeCustomerId": "cus_00000001" },
+});
+```
+
+The `lookup` operation is asynchronous. It takes a key parameter and a callback to be invoked when the operation completes. The `params` object must contain top-level key(s) matching your `KeySchema` or the operation will fail. 
 
 #### Automatic Topic Creation
 

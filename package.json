@@ -1,6 +1,6 @@
 {
   "name": "saws",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Simple abstraction layer for AWS services",
   "main": "lib/saws.js",
   "scripts": {
