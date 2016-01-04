@@ -74,14 +74,6 @@ The `save` operation is asynchronous. It takes an object and a callback to be in
 
 Note: As with all Saws, creation of the underlying resource is automatic. In this case, when saving a record, if the DynamoDB table does not already exist, Saws will create it and wait for it to be available before proceeding with the operation.
 
-### SNS (Simple Notification Service)
-
-Start by instantiating a topic object.
-
-```javascript
-var topic = new Saws.Topic("NewOrders");
-```
-
 #### lookup(params, cb)
 
 Use the table instance to save records.
@@ -94,11 +86,20 @@ customers.lookup({"IdentityId": "id0000001"}, function(err, data) {
 
 The `lookup` operation is asynchronous. It takes a key parameter and a callback to be invoked when the operation completes. The `params` object must contain top-level key(s) matching your `KeySchema` or the operation will fail. 
 
+
+### SNS (Simple Notification Service)
+
+Start by instantiating a topic object.
+
+```javascript
+var topic = new Saws.Topic("NewOrders");
+```
+
 #### Automatic Topic Creation
 
 Creating a `Topic` will automatically create an SNS Topic on AWS if it does not already exist. The value of `Saws.stage` is appended to the topic name.
 
-#### Sending messages
+#### publish(payload, cb)
 
 Send a message using `publish`. First argument is the payload, second is a callback to be invoked when publishing is done.
 
