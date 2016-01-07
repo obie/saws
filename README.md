@@ -23,6 +23,13 @@ var AWS = require('aws-sdk');
 var Saws = new require('saws')(AWS);
 ```
 
+### Setting the Region
+The AWS SDK for Node.js doesn't select the region by default. You can choose a region using AWS.config.update()
+
+```
+AWS.config.update({region:'us-east-1'});
+```
+
 ### Stage Variable
 
 Set a value for the stage variable to indicate which environment you're running in. This is useful in conjunction with frameworks such as <http://serverless.com>
