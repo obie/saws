@@ -134,6 +134,32 @@ topic.publish({
 }, done);
 ```
 
+#### SNSEvent (for consuming SNS events)
+
+Wrap the `event` provided to your Lambda's handler function in a `new SNSEvent` object for convenient handling. The SNSEvent instance provides an each iterator with a callback that is invoked for each SNS `Record` in the message. The callback gets two parameters, the whole message object itself and `JSON.parse`'d payload.
+
+```javascript
+var chck = require('chck');
+
+// a Lambda function handling an SNS event
+exports.handler = function(event, context) {
+  var e = new Saws.SNSEvent(event);
+  e.each(function(message, order) {
+    if(chck(order, {
+      NewOrder: {
+        userId: {$present: true}
+        PaymentReceipt: {$present: true}
+        FeedbackHistory: {$present: false}
+      }
+    })) {
+      // handle the order...
+    }
+    else {
+      context.success('failed chck guard');
+    }
+  });
+```
+
 ### SQS (Simple Queue Service)
 
 _coming soon_

@@ -10,7 +10,18 @@ var Saws = new require('../lib/saws.js')(AWS);
 
 Saws.stage = "test";
 
-describe('SNS functions', function() {
+describe('SNSEvent', function() {
+  it('should make it convenient to process incoming messages', function(done) {
+    var e = new Saws.SNSEvent(require('./sns/event.js')); // sample event data
+    e.each(function(message, payload) {
+      expect(message.MessageId).to.equal("95df01b4-ee98-5cb9-9903-4c221d41eb5e");
+      expect(payload.a).to.equal("foo");
+    });
+    done();
+  });
+});
+
+describe('SNS pubishing', function() {
   var snsStub = sinon.stub(Saws.sns, 'createTopic');
 
   describe('new Topic', function() {
