@@ -100,8 +100,8 @@ The `TableName` should not be passed.
 Returns one or more items and item attributes by accessing every item in a table or a secondary index.
 
 ```javascript
-customers.lookup({"IdentityId": "id0000001"}, function(err, data) {
-  console.log(data) // => { "IdentityId": "id0000001", "StripeCustomerId": "cus_00000001" },
+customers.scan({"Verified": false}, function(err, data) {
+  console.log(data) // => [{ "IdentityId": "id0000001", "Verified": false}, { "IdentityId": "id0000004", "Verified": false}]
 });
 ```
 

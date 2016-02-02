@@ -111,15 +111,21 @@ describe('DynamoDB functions', function() {
     expect(stubs.get).to.have.been.calledWith({Key: params, TableName: "StripeCashier-test"});
   });
 
-  it('scan() should retrieve multiple stored objects', function(done) {
+  it('should retrieve multiple stored objects with scan()', function(done) {
     stubs.createTable.callsArgWith(1, {message: 'Table already exists'});
-    stubs.scan.callsArgWith(1, null, {Items: {}});
+    stubs.scan.callsArgWith(1, null, {Items: [{name: '1'}, {name: '2'}], NextMarker: 'The next'});
 
     var customers = new Saws.Table(tableDefinition);
     var params = {
       "IdentityId": "id0000001"
     };
-    customers.scan(params, done);
+    customers.scan(params, function(err, items) {
+      expect(err).to.be.null;
+      expect(items).to.be.instanceof(Array);
+      expect(items).to.have.length(2);
+      expect(items[0].name).to.be.equal('1');
+      done();
+    });
 
     sinon.assert.called(stubs.scan);
     expect(stubs.scan).to.have.been.calledWith({IdentityId: "id0000001", TableName: "StripeCashier-test"});
