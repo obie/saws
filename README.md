@@ -91,8 +91,21 @@ customers.lookup({"IdentityId": "id0000001"}, function(err, data) {
 });
 ```
 
-The `lookup` operation is asynchronous. It takes a key parameter and a callback to be invoked when the operation completes. The `params` object must contain top-level key(s) matching your `KeySchema` or the operation will fail. 
+The `lookup` operation is asynchronous. It takes a key parameter and a callback to be invoked when the operation completes. The `params` object must contain top-level key(s) matching your `KeySchema` or the operation will fail.
 
+#### scan(params, cb)
+
+A thin wrapper around `DynamoDB.DocuemntClient.scan`, accepting the [same parameters](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property).
+
+The `TableName` should not be passed.
+
+Returns one or more items and item attributes by accessing every item in a table or a secondary index.
+
+```javascript
+customers.scan({"Verified": false}, function(err, data) {
+  console.log(data) // => [{ "IdentityId": "id0000001", "Verified": false}, { "IdentityId": "id0000004", "Verified": false}]
+});
+```
 
 ### SNS (Simple Notification Service)
 
