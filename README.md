@@ -24,6 +24,13 @@ var Saws = require('saws');
 var saws = new Saws(AWS);
 ```
 
+or slightly shorter as:
+
+```javascript
+var AWS = require('aws-sdk');
+var saws = new (require('saws'))(AWS);
+```
+
 ### Setting the Region
 The AWS SDK for Node.js doesn't select the region by default. You can choose a region using AWS.config.update()
 
