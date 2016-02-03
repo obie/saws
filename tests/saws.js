@@ -7,20 +7,13 @@ var chai = require('chai');
 var sinon = require("sinon");
 chai.use(require("sinon-chai"));
 var expect = chai.expect;
+var AWSStub = require('./aws-stub');
 
 describe('Saws', function() {
   it('should autoload submodules', function(done) {
-    // Unfortunately we'll need some stubs for the submodules to call
-    var AWSStub = {
-        DynamoDB: sinon.stub,
-        SNS: sinon.stub,
-        SQS: sinon.stub
-    };
-    AWSStub.DynamoDB.DocumentClient = sinon.stub();
+    var Saws = require('../lib/saws').Saws;
+    var saws = new Saws(require('./aws-stub')());
 
-    var Saws = require('../lib/saws');
-    var saws = new Saws(AWSStub);
-    // Spot check a couple of the services
     var expectedModules = [
       'Queue',
       'Topic',

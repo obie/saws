@@ -4,12 +4,13 @@ var chai = require('chai');
 var sinon = require("sinon");
 chai.use(require("sinon-chai"));
 var expect = chai.expect;
+var AWSStub = require('./aws-stub');
 
 function FakeSaws() {
     var fake = {
       stage: 'test',
       DEBUG: sinon.stub(),
-      AWS: {SNS: sinon.stub()}
+      AWS: new AWSStub()
     };
 
     fake.AWS.SNS.prototype.createTopic = sinon.stub().callsArgWith(1, null, {TopicArn: 'fake:arn'});

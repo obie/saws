@@ -4,12 +4,13 @@ var chai = require('chai');
 var sinon = require("sinon");
 chai.use(require("sinon-chai"));
 var expect = chai.expect;
+var AWSStub = require('./aws-stub');
 
 function FakeSaws() {
     var fake = {
       stage: 'test',
       DEBUG: sinon.stub(),
-      AWS: {SQS: sinon.stub()}
+      AWS: new AWSStub()
     };
     var submodule = require('../lib/services/sqs')(fake);
     fake.Queue = submodule.Queue;

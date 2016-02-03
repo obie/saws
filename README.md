@@ -20,7 +20,7 @@ Initialize with the `AWS` sdk instance.
 
 ```javascript
 var AWS = require('aws-sdk');
-var Saws = require('saws');
+var Saws = require('saws').Saws;
 var saws = new Saws(AWS);
 ```
 
@@ -28,7 +28,7 @@ or slightly shorter as:
 
 ```javascript
 var AWS = require('aws-sdk');
-var saws = new (require('saws'))(AWS);
+var saws = new require('saws').Saws(AWS);
 ```
 
 ### Setting the Region
@@ -190,3 +190,15 @@ _coming soon_
 ## Debug
 
 Set `SAWS_DEBUG` to true in your environment to enable debug output to the console.
+
+## Testing
+
+To test your code which uses Saws, you can pass it a stubbed AWS during initialization to ensure no callouts are actually made. For your convenience, one that stubs all services that Saws supports is available as `AWSStub`:
+
+```javascript
+var AWSStub = require('saws').AWSStub;
+var Saws = require('saws').Saws;
+var saws = new Saws(AWSStub);
+```
+
+Now you're able to stub only the Saws methods you need to without worrying about any accidental callouts.

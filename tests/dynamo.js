@@ -5,6 +5,7 @@ var chai = require('chai');
 var sinon = require("sinon");
 chai.use(require("sinon-chai"));
 var expect = chai.expect;
+var AWSStub = require('./aws-stub');
 
 // @param setCreated bool flag the table as having been already created on AWS. Defaults to true.
 function FakeSaws(setCreated) {
@@ -13,9 +14,8 @@ function FakeSaws(setCreated) {
     var fake = {
       stage: 'test',
       DEBUG: sinon.stub(),
-      AWS: {DynamoDB: sinon.stub()}
+      AWS: new AWSStub()
     };
-    fake.AWS.DynamoDB.DocumentClient = sinon.stub();
     var submodule = require('../lib/services/dynamo')(fake);
     fake.Table = submodule.Table;
 
