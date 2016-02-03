@@ -16,7 +16,8 @@ function FakeSaws(setCreated) {
       AWS: {DynamoDB: sinon.stub()}
     };
     fake.AWS.DynamoDB.DocumentClient = sinon.stub();
-    require('../lib/dynamo')(fake);
+    var submodule = require('../lib/services/dynamo')(fake);
+    fake.Table = submodule.Table;
 
     if (setCreated) {
       fake.AWS.DynamoDB.prototype.createTable = sinon.stub().callsArgWith(1, null, {message: 'Table already exists'});

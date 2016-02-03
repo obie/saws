@@ -13,7 +13,9 @@ function FakeSaws() {
     };
 
     fake.AWS.SNS.prototype.createTopic = sinon.stub().callsArgWith(1, null, {TopicArn: 'fake:arn'});
-    require('../lib/sns')(fake);
+    var submodule = require('../lib/services/sns')(fake);
+    fake.SNSEvent = submodule.SNSEvent;
+    fake.Topic = submodule.Topic;
 
     return fake;
 }

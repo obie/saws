@@ -11,7 +11,8 @@ function FakeSaws() {
       DEBUG: sinon.stub(),
       AWS: {SQS: sinon.stub()}
     };
-    require('../lib/sqs')(fake);
+    var submodule = require('../lib/services/sqs')(fake);
+    fake.Queue = submodule.Queue;
 
     return fake;
 }
