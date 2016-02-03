@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/obie/saws#readme",
   "dependencies": {
-    "lodash": "^3.10.1"
+    "lodash": "^4.1.0"
   },
   "devDependencies": {
     "aws-sdk": "^2.2.26",
