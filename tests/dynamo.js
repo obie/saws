@@ -20,7 +20,9 @@ function FakeSaws(setCreated) {
     fake.Table = submodule.Table;
 
     if (setCreated) {
-      fake.AWS.DynamoDB.prototype.createTable = sinon.stub().callsArgWith(1, null, {message: 'Table already exists'});
+      var createStub = sinon.stub();
+      createStub.callsArgWith(1, null, {message: 'Table already exists'});
+      fake.AWS.DynamoDB.prototype.createTable = createStub;
       fake.Table.prototype.initialize = sinon.stub().callsArg(0);
     }
 
@@ -60,7 +62,8 @@ describe('DynamoDB functions', function() {
       "IdentityId": "id0000001",
       "StripeCustomerId": "cus_00000001"
     }, function(err, data) {
-      expect(fakeSaws.AWS.DynamoDB.prototype.createTable ).to.have.been.calledWith(_.merge(_.cloneDeep(tableDefinition), {TableName: "StripeCashier-test"}));
+      var expectedArgs = _.merge(_.cloneDeep(tableDefinition), {TableName: "StripeCashier-test"});
+      expect(fakeSaws.AWS.DynamoDB.prototype.createTable).to.have.been.calledWith(expectedArgs);
       sinon.assert.calledThrice(fakeSaws.AWS.DynamoDB.prototype.describeTable );
       done();
     });
