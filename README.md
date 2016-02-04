@@ -190,3 +190,13 @@ _coming soon_
 ## Debug
 
 Set `SAWS_DEBUG` to true in your environment to enable debug output to the console.
+
+## Testing
+
+To test your code which uses Saws, you can pass it a stubbed AWS during initialization to ensure no callouts are actually made. For your convenience, one that stubs all services that Saws supports is available as `AWSStub`:
+
+```javascript
+var mockSaws = new require('saws').Saws(require('saws').AWSStub);
+```
+
+Now you're able to stub only the Saws methods you need to and pass this as a dependency without worrying about any accidental callouts.
