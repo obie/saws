@@ -16,12 +16,11 @@ function FakeSaws(setCreated) {
       DEBUG: sinon.stub(),
       AWS: new AWSStub()
     };
-    var submodule = require('../lib/services/dynamo')(fake);
-    fake.Table = submodule.Table;
+    require('../lib/services/dynamo')(fake);
 
     if (setCreated) {
       var createStub = sinon.stub();
-      createStub.callsArgWith(1, null, {message: 'Table already exists'});
+      createStub.callsArgWith(1, {message: 'Table already exists', hey: 'hoh'});
       fake.AWS.DynamoDB.prototype.createTable = createStub;
       fake.Table.prototype.initialize = sinon.stub().callsArg(0);
     }
@@ -69,15 +68,37 @@ describe('DynamoDB functions', function() {
     });
   });
 
-  it('operations do not break or call describeTable when table already exists', function(done) {
-    var fakeSaws = FakeSaws();
-    var describeStub = sinon.stub();
-    fakeSaws.AWS.DynamoDB.prototype.describeTable = describeStub;
+  it('does do not break or call describeTable when table already exists', function(done) {
+    var fakeSaws = FakeSaws(false);
+    fakeSaws.AWS.DynamoDB.prototype.describeTable = sinon.stub();
+    fakeSaws.AWS.DynamoDB.prototype.createTable = sinon.stub().callsArgWith(1, {message: 'Table already exists'});
 
     var putStub = sinon.stub().callsArgWith(1, null, {});
     fakeSaws.AWS.DynamoDB.DocumentClient.prototype.put = putStub;
 
     var customers = new fakeSaws.Table(tableDefinition);
+    customers.save({
+      "IdentityId": "id0000001",
+      "StripeCustomerId": "cus_00000001"
+    }, function(err, data) {
+      sinon.assert.calledOnce(fakeSaws.AWS.DynamoDB.prototype.createTable);
+      sinon.assert.notCalled(fakeSaws.AWS.DynamoDB.prototype.describeTable);
+      sinon.assert.called(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.put);
+      expect(customers.created).to.be.true;
+      done();
+    });
+  });
+
+  it('does not break or call createTable when table already created', function(done) {
+    var fakeSaws = FakeSaws(false);
+    fakeSaws.AWS.DynamoDB.prototype.describeTable = sinon.stub();
+    fakeSaws.AWS.DynamoDB.prototype.createTable = sinon.stub();
+
+    var putStub = sinon.stub().callsArgWith(1, null, {});
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.put = putStub;
+
+    var customers = new fakeSaws.Table(tableDefinition);
+    customers.created = true;
     customers.save({
       "IdentityId": "id0000001",
       "StripeCustomerId": "cus_00000001"
