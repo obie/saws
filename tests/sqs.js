@@ -1,26 +1,38 @@
+// jshint mocha: true
+'use strict';
 var chai = require('chai');
 var sinon = require("sinon");
 chai.use(require("sinon-chai"));
 var expect = chai.expect;
+var AWSStub = require('./aws-stub');
 
-var AWS = require('aws-sdk');
-AWS.config.update({region:'us-east-1'});
+function FakeSaws() {
+    var fake = {
+      stage: 'test',
+      DEBUG: sinon.stub(),
+      AWS: new AWSStub()
+    };
+    require('../lib/services/sqs')(fake);
 
-var Saws = new require('../lib/saws.js')(AWS);
+    return fake;
+}
 
 describe('SQS functions', function() {
+
   describe('publish', function() {
     it('should put a message on a queue', function(done) {
-      var publishStub = sinon.stub(Saws.sqs, 'sendMessage', function(obj, cb) {cb()});
+      var fakeSaws = FakeSaws();
+      fakeSaws.AWS.SQS.prototype.sendMessage = sinon.stub().callsArgWith(1, null, {MessageId: 'id00001'});
       var url = "someQueueUrl";
+      var queue = new fakeSaws.Queue(url);
 
-      var queue = new Saws.Queue(url);
-      queue.publish({foo: "bar"}, done);
-
-      expect(publishStub).to.have.been.calledWith({
-            QueueUrl: url,
-            MessageBody: "{\"foo\":\"bar\"}"
-          }, done);
+      queue.publish({foo: "bar"}, function(err, dajjta) {
+        expect(fakeSaws.AWS.SQS.prototype.sendMessage).to.have.been.calledWith({
+          QueueUrl: url,
+          MessageBody: JSON.stringify({foo: "bar"})
+        });
+        done();
+      });
     });
   });
 });

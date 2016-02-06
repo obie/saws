@@ -20,7 +20,15 @@ Initialize with the `AWS` sdk instance.
 
 ```javascript
 var AWS = require('aws-sdk');
-var Saws = new require('saws')(AWS);
+var Saws = require('saws').Saws;
+var saws = new Saws(AWS);
+```
+
+or slightly shorter as:
+
+```javascript
+var AWS = require('aws-sdk');
+var saws = new require('saws').Saws(AWS);
 ```
 
 ### Setting the Region
@@ -36,7 +44,7 @@ Set a value for the stage variable to indicate which environment you're running 
 
 ```javascript
 // defaults to 'development'
-Saws.stage = process.env.SERVERLESS_STAGE;
+saws.stage = process.env.SERVERLESS_STAGE;
 ```
 
 Now just instantiate saws for tables, topics and queues as needed in your code. Enjoy the simple interface.
@@ -58,10 +66,10 @@ var STRIPE_CUSTOMERS_PARAMS = {
 };
 ```
 
-Then instantiate a `Saws.Table` object using the params. Note that stage name is appended to the name of the table created.
+Then instantiate a `saws.Table` object using the params. Note that stage name is appended to the name of the table created.
 
 ```javascript
-var customers = new Saws.Table(STRIPE_CUSTOMERS_PARAMS);
+var customers = new saws.Table(STRIPE_CUSTOMERS_PARAMS);
 ```
 
 #### save(item, cb)
@@ -112,12 +120,12 @@ customers.scan({"Verified": false}, function(err, data) {
 Start by instantiating a topic object.
 
 ```javascript
-var topic = new Saws.Topic("NewOrders");
+var topic = new saws.Topic("NewOrders");
 ```
 
 #### Automatic Topic Creation
 
-Creating a `Topic` will automatically create an SNS Topic on AWS if it does not already exist. The value of `Saws.stage` is appended to the topic name.
+Creating a `Topic` will automatically create an SNS Topic on AWS if it does not already exist. The value of `saws.stage` is appended to the topic name.
 
 #### publish(payload, cb)
 
@@ -136,7 +144,7 @@ The callback is invoked when a response from the service is returned.  The conte
 Payload is automatically run through `JSON.stringify()`.
 
 ```javascript
-var topic = new Saws.Topic("NewOrders");
+var topic = new saws.Topic("NewOrders");
 topic.publish({
   NewOrder: {
       userId: user.userId,
@@ -158,7 +166,7 @@ var chck = require('chck');
 
 // a Lambda function handling an SNS event
 exports.handler = function(event, context) {
-  var e = new Saws.SNSEvent(event);
+  var e = new saws.SNSEvent(event);
   e.eachMessage(function(message, order) {
     if(chck(order, {
       NewOrder: {
@@ -182,3 +190,13 @@ _coming soon_
 ## Debug
 
 Set `SAWS_DEBUG` to true in your environment to enable debug output to the console.
+
+## Testing
+
+To test your code which uses Saws, you can pass it a stubbed AWS during initialization to ensure no callouts are actually made. For your convenience, one that stubs all services that Saws supports is available as `AWSStub`:
+
+```javascript
+var mockSaws = new require('saws').Saws(require('saws').AWSStub);
+```
+
+Now you're able to stub only the Saws methods you need to and pass this as a dependency without worrying about any accidental callouts.

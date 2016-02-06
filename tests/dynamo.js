@@ -1,16 +1,32 @@
 // jshint mocha: true
+'use strict';
 var _ = require('lodash');
 var chai = require('chai');
 var sinon = require("sinon");
 chai.use(require("sinon-chai"));
 var expect = chai.expect;
+var AWSStub = require('./aws-stub');
 
-var AWS = require('aws-sdk');
-AWS.config.update({region:'us-east-1'});
+// @param setCreated bool flag the table as having been already created on AWS. Defaults to true.
+function FakeSaws(setCreated) {
+    setCreated = (_.isNil(setCreated)) ? true : setCreated;
 
-var Saws = new require('../lib/saws.js')(AWS);
+    var fake = {
+      stage: 'test',
+      DEBUG: sinon.stub(),
+      AWS: new AWSStub()
+    };
+    require('../lib/services/dynamo')(fake);
 
-Saws.stage = "test";
+    if (setCreated) {
+      var createStub = sinon.stub();
+      createStub.callsArgWith(1, {message: 'Table already exists', hey: 'hoh'});
+      fake.AWS.DynamoDB.prototype.createTable = createStub;
+      fake.Table.prototype.initialize = sinon.stub().callsArg(0);
+    }
+
+    return fake;
+}
 
 var tableDefinition = {
   TableName: "StripeCashier",
@@ -24,110 +40,136 @@ var tableDefinition = {
 };
 
 describe('DynamoDB functions', function() {
-  // Give each stub a name with arguments to be passed to sinon.stub
-  var STUB_DEFINITIONS = {
-      createTable: [Saws.ddb, 'createTable'],
-      describeTable: [Saws.ddb, 'describeTable'],
-      put: [Saws.doc, 'put'],
-      get: [Saws.doc, 'get'],
-      scan: [Saws.doc, 'scan']
-  };
+  it('new Saws.Table creates a new table if needed', function(done) {
+    var fakeSaws = FakeSaws(false);
 
-  // Each STUB_DEFINITION will have a corresponfing stub created in `stubs`
-  var stubs = {};
+    var createStub = sinon.stub();
+    createStub.callsArgWith(1, null, {TableStatus: 'CREATING'});
+    fakeSaws.AWS.DynamoDB.prototype.createTable = createStub;
 
-  beforeEach(function() {
-    var stubNames = Object.getOwnPropertyNames(STUB_DEFINITIONS);
+    var describeStub = sinon.stub();
+    describeStub.onFirstCall().callsArgWith(1, null, {Table: { TableStatus: 'CREATING'}});
+    describeStub.onSecondCall().callsArgWith(1, null, {Table: { TableStatus: 'CREATING'}});
+    describeStub.onThirdCall().callsArgWith(1, null, {Table: { TableStatus: 'ACTIVE'}});
+    fakeSaws.AWS.DynamoDB.prototype.describeTable = describeStub;
 
-    for(var i = 0; i < stubNames.length; i++) {
-        stubs[stubNames[i]] = sinon.stub.apply(sinon, STUB_DEFINITIONS[stubNames[i]]);
-    }
-  });
+    var putStub = sinon.stub().callsArgWith(1, null, {});
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.put = putStub;
 
-  afterEach(function() {
-    _.each(Object.getOwnPropertyNames(stubs), function(stubName) {
-      stubs[stubName].restore();
+    var customers = new fakeSaws.Table(tableDefinition);
+    customers.save({
+      "IdentityId": "id0000001",
+      "StripeCustomerId": "cus_00000001"
+    }, function(err, data) {
+      var expectedArgs = _.merge(_.cloneDeep(tableDefinition), {TableName: "StripeCashier-test"});
+      expect(fakeSaws.AWS.DynamoDB.prototype.createTable).to.have.been.calledWith(expectedArgs);
+      sinon.assert.calledThrice(fakeSaws.AWS.DynamoDB.prototype.describeTable );
+      done();
     });
   });
 
-  it('new Saws.Table creates a new table if needed', function(done) {
-    stubs.createTable.callsArgWith(1, null, {TableStatus: 'CREATING'});
-    stubs.describeTable.onFirstCall().callsArgWith(1, null, {Table: { TableStatus: 'CREATING'}});
-    stubs.describeTable.onSecondCall().callsArgWith(1, null, {Table: { TableStatus: 'CREATING'}});
-    stubs.describeTable.onThirdCall().callsArgWith(1, null, {Table: { TableStatus: 'ACTIVE'}});
-    stubs.put.callsArgWith(1, null, {});
+  it('does do not break or call describeTable when table already exists', function(done) {
+    var fakeSaws = FakeSaws(false);
+    fakeSaws.AWS.DynamoDB.prototype.describeTable = sinon.stub();
+    fakeSaws.AWS.DynamoDB.prototype.createTable = sinon.stub().callsArgWith(1, {message: 'Table already exists'});
 
-    var customers = new Saws.Table(tableDefinition);
+    var putStub = sinon.stub().callsArgWith(1, null, {});
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.put = putStub;
+
+    var customers = new fakeSaws.Table(tableDefinition);
     customers.save({
       "IdentityId": "id0000001",
       "StripeCustomerId": "cus_00000001"
-    }, done);
-
-    expect(stubs.createTable).to.have.been.calledWith(_.merge(_.cloneDeep(tableDefinition), {TableName: "StripeCashier-test"}));
+    }, function(err, data) {
+      sinon.assert.calledOnce(fakeSaws.AWS.DynamoDB.prototype.createTable);
+      sinon.assert.notCalled(fakeSaws.AWS.DynamoDB.prototype.describeTable);
+      sinon.assert.called(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.put);
+      expect(customers.created).to.be.true;
+      done();
+    });
   });
 
-  it('operations do not break or call describeTable when table already exists', function(done) {
-    stubs.createTable.callsArgWith(1, {message: 'Table already exists'});
-    stubs.put.callsArgWith(1, null, {});
+  it('does not break or call createTable when table already created', function(done) {
+    var fakeSaws = FakeSaws(false);
+    fakeSaws.AWS.DynamoDB.prototype.describeTable = sinon.stub();
+    fakeSaws.AWS.DynamoDB.prototype.createTable = sinon.stub();
 
-    var customers = new Saws.Table(tableDefinition);
+    var putStub = sinon.stub().callsArgWith(1, null, {});
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.put = putStub;
+
+    var customers = new fakeSaws.Table(tableDefinition);
+    customers.created = true;
     customers.save({
       "IdentityId": "id0000001",
       "StripeCustomerId": "cus_00000001"
-    }, done);
-
-    sinon.assert.notCalled(stubs.describeTable);
-    sinon.assert.called(stubs.put);
+    }, function(err, data) {
+      sinon.assert.notCalled(fakeSaws.AWS.DynamoDB.prototype.createTable);
+      sinon.assert.notCalled(fakeSaws.AWS.DynamoDB.prototype.describeTable);
+      sinon.assert.called(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.put);
+      done();
+    });
   });
 
   it('save() should persist an object', function(done) {
-    stubs.createTable.callsArgWith(1, {message: 'Table already exists'});
-    stubs.put.callsArgWith(1, null, {});
+    var fakeSaws = FakeSaws();
+    var putStub = sinon.stub().callsArgWith(1, null, {});
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.put = putStub;
 
-    var customers = new Saws.Table(tableDefinition);
+    var customers = new fakeSaws.Table(tableDefinition);
     var params = {
       "IdentityId": "id0000001",
       "StripeCustomerId": "cus_00000001",
       "Name": "Rylo Ken",
       "Email": "emoryloken@empire.gov"
     };
-    customers.save(params, done);
-
-    sinon.assert.called(stubs.put);
-    expect(stubs.put).to.have.been.calledWith({TableName: "StripeCashier-test", Item: params});
+    customers.save(params, function(err, data) {
+      sinon.assert.calledOnce(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.put);
+      expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.put).to.have.been.calledWith({TableName: "StripeCashier-test", Item: params});
+      done();
+    });
   });
 
   it('lookup() should retrieve a stored object', function(done) {
-    stubs.createTable.callsArgWith(1, {message: 'Table already exists'});
-    stubs.get.callsArgWith(1, null, {});
+    var fakeSaws = FakeSaws();
+    var getStub = sinon.stub().callsArgWith(1, null, {
+      "IdentityId": "id0000001",
+      "Name": "Rylo Ken"
+    });
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get = getStub;
 
-    var customers = new Saws.Table(tableDefinition);
+    var customers = new fakeSaws.Table(tableDefinition);
     var params = {
       "IdentityId": "id0000001"
     };
-    customers.lookup(params, done);
+    customers.lookup(params, function(err, data) {
+      sinon.assert.calledOnce(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get );
+      expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get).to.have.been.calledWith({Key: params, TableName: "StripeCashier-test"});
+      expect(err).to.be.not.ok;
+      expect(data).to.be.instanceof(Object);
+      expect(data.Name).to.equal('Rylo Ken');
+      done();
+    });
 
-    sinon.assert.called(stubs.get);
-    expect(stubs.get).to.have.been.calledWith({Key: params, TableName: "StripeCashier-test"});
   });
 
   it('should retrieve multiple stored objects with scan()', function(done) {
-    stubs.createTable.callsArgWith(1, {message: 'Table already exists'});
-    stubs.scan.callsArgWith(1, null, {Items: [{name: '1'}, {name: '2'}], NextMarker: 'The next'});
+    var fakeSaws = FakeSaws();
+    var scanStub = sinon.stub().callsArgWith(1, null, {});
+    scanStub.callsArgWith(1, null, {Items: [{name: '1'}, {name: '2'}], NextMarker: 'The next'});
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.scan = scanStub;
 
-    var customers = new Saws.Table(tableDefinition);
+    var customers = new fakeSaws.Table(tableDefinition);
     var params = {
       "IdentityId": "id0000001"
     };
     customers.scan(params, function(err, items) {
-      expect(err).to.be.null;
+      sinon.assert.called(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.scan );
+      expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.scan ).to.have.been.calledWith({IdentityId: "id0000001", TableName: "StripeCashier-test"});
+      expect(err).to.be.not.ok;
       expect(items).to.be.instanceof(Array);
       expect(items).to.have.length(2);
       expect(items[0].name).to.be.equal('1');
       done();
     });
-
-    sinon.assert.called(stubs.scan);
-    expect(stubs.scan).to.have.been.calledWith({IdentityId: "id0000001", TableName: "StripeCashier-test"});
   });
 });

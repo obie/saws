@@ -1,18 +1,29 @@
+// jshint mocha: true
+'use strict';
 var chai = require('chai');
 var sinon = require("sinon");
 chai.use(require("sinon-chai"));
 var expect = chai.expect;
+var AWSStub = require('./aws-stub');
 
-var AWS = require('aws-sdk');
-AWS.config.update({region:'us-east-1'});
+function FakeSaws() {
+    var fake = {
+      stage: 'test',
+      DEBUG: sinon.stub(),
+      AWS: new AWSStub()
+    };
 
-var Saws = new require('../lib/saws.js')(AWS);
+    fake.AWS.SNS.prototype.createTopic = sinon.stub().callsArgWith(1, null, {TopicArn: 'fake:arn'});
+    require('../lib/services/sns')(fake);
 
-Saws.stage = "test";
+    return fake;
+}
 
 describe('SNSEvent', function() {
+  var fakeSaws = FakeSaws();
+
   it('should make it convenient to process incoming messages', function(done) {
-    var e = new Saws.SNSEvent(require('./sns/event.js')); // sample event data
+    var e = new fakeSaws.SNSEvent(require('./sns/event.js')); // sample event data
     e.eachMessage(function(message, payload) {
       expect(message.MessageId).to.equal("95df01b4-ee98-5cb9-9903-4c221d41eb5e");
       expect(payload.a).to.equal("foo");
@@ -21,36 +32,41 @@ describe('SNSEvent', function() {
   });
 });
 
-describe('SNS pubishing', function() {
-  var snsStub = sinon.stub(Saws.sns, 'createTopic');
-
+describe('SNS publishing', function() {
   describe('new Topic', function() {
     it('tries to create a topic (in case it does not exist yet)', function(done) {
-      var topic = new Saws.Topic("NewOrders");
-      topic.publish("whatever"); // topic creation is lazy
+      var fakeSaws = FakeSaws();
+      fakeSaws.AWS.SNS.prototype.publish = sinon.stub().callsArgWith(1, null, done);
+      var topic = new fakeSaws.Topic("NewOrders");
 
-      expect(snsStub).to.have.been.calledWith({
-        Name: "NewOrders-test"
+      topic.publish("whatever", function(err, data) {
+          expect(fakeSaws.AWS.SNS.prototype.createTopic).to.have.been.calledWith({
+            Name: "NewOrders-test"
+          });
+          expect(topic.arn).to.be.ok;
+          delete fakeSaws.AWS.SNS.prototype.publish;
+          done();
       });
-      done();
     });
   });
 
   describe('publish', function() {
     it('should put a message on a topic', function(done) {
-      var topicArn = "arn:aws:sns:us-east-1:501293600930:NewOrders-development";
-      snsStub.callsArgWith(1, null, {TopicArn: topicArn});
+      var fakeSaws = FakeSaws();
+      fakeSaws.AWS.SNS.prototype.publish = sinon.stub().callsArgWith(1, null, done);
 
-      var publishStub = sinon.stub(Saws.sns, 'publish');
-    
-      var topic = new Saws.Topic("NewOrders");
-      topic.publish({foo: "bar"});
+      var topic = new fakeSaws.Topic("NewOrders");
+      // Set the topic as having already been created
+      topic.arn = "arn:aws:sns:us-east-1:501293600930:NewOrders-development";
+      topic.publish({foo: "bar"}, function(err, data) {
+        expect(fakeSaws.AWS.SNS.prototype.publish).to.have.been.calledWith({
+          TopicArn: topic.arn,
+          Message: JSON.stringify({foo: "bar"})
+        });
 
-      expect(publishStub).to.have.been.calledWith({
-        TopicArn: topicArn,
-        Message: "{\"foo\":\"bar\"}"
+        expect(fakeSaws.AWS.SNS.prototype.createTopic).to.not.have.been.called;
+        done();
       });
-      done();
     });
   });
 });
