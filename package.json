@@ -1,6 +1,6 @@
 {
   "name": "saws",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Simple abstraction layer for AWS services",
   "main": "lib/saws.js",
   "scripts": {
@@ -11,7 +11,8 @@
     "url": "git+https://github.com/obie/saws.git"
   },
   "keywords": [
-    "aws"
+    "aws",
+    "serverless"
   ],
   "author": "Obie Fernandez",
   "contributors": [
