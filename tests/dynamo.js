@@ -4,6 +4,7 @@ var _ = require('lodash');
 var chai = require('chai');
 var sinon = require("sinon");
 chai.use(require("sinon-chai"));
+chai.use(require("dirty-chai"));
 var expect = chai.expect;
 var AWSStub = require('./aws-stub');
 
@@ -63,7 +64,7 @@ describe('DynamoDB functions', function() {
     }, function(err, data) {
       var expectedArgs = _.merge(_.cloneDeep(tableDefinition), {TableName: "StripeCashier-test"});
       expect(fakeSaws.AWS.DynamoDB.prototype.createTable).to.have.been.calledWith(expectedArgs);
-      sinon.assert.calledThrice(fakeSaws.AWS.DynamoDB.prototype.describeTable );
+      sinon.assert.calledThrice(fakeSaws.AWS.DynamoDB.prototype.describeTable);
       done();
     });
   });
@@ -84,7 +85,7 @@ describe('DynamoDB functions', function() {
       sinon.assert.calledOnce(fakeSaws.AWS.DynamoDB.prototype.createTable);
       sinon.assert.notCalled(fakeSaws.AWS.DynamoDB.prototype.describeTable);
       sinon.assert.called(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.put);
-      expect(customers.created).to.be.true;
+      expect(customers.created).to.be.true();
       done();
     });
   });
@@ -144,9 +145,9 @@ describe('DynamoDB functions', function() {
       "IdentityId": "id0000001"
     };
     customers.lookup(params, function(err, data) {
-      sinon.assert.calledOnce(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get );
+      sinon.assert.calledOnce(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get);
       expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get).to.have.been.calledWith({Key: params, TableName: "StripeCashier-test"});
-      expect(err).to.be.not.ok;
+      expect(err).to.not.exist();
       expect(data).to.be.instanceof(Object);
       expect(data.Name).to.equal('Rylo Ken');
       done();
@@ -163,10 +164,10 @@ describe('DynamoDB functions', function() {
       "IdentityId": "id0000001"
     };
     customers.lookup(params, function(err, data) {
-      sinon.assert.calledOnce(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get );
+      sinon.assert.calledOnce(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get);
       expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get).to.have.been.calledWith({Key: params, TableName: "StripeCashier-test"});
-      expect(err).to.be.not.ok;
-      expect(data).to.be.not.ok;
+      expect(err).to.not.exist();
+      expect(data).to.not.exist();
       done();
     });
   });
@@ -182,12 +183,73 @@ describe('DynamoDB functions', function() {
       "IdentityId": "id0000001"
     };
     customers.scan(params, function(err, items) {
-      sinon.assert.called(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.scan );
-      expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.scan ).to.have.been.calledWith({IdentityId: "id0000001", TableName: "StripeCashier-test"});
-      expect(err).to.be.not.ok;
+      sinon.assert.called(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.scan);
+      expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.scan).to.have.been.calledWith({IdentityId: "id0000001", TableName: "StripeCashier-test"});
+      expect(err).to.not.exist();
       expect(items).to.be.instanceof(Array);
       expect(items).to.have.length(2);
       expect(items[0].name).to.be.equal('1');
+      done();
+    });
+  });
+
+  it('should delete an item with simple params', function(done) {
+    var fakeSaws = FakeSaws();
+    var deleteStub = sinon.stub().callsArgWith(1, null, {});
+    deleteStub.callsArgWith(1, null, null);
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.delete = deleteStub;
+
+    var customers = new fakeSaws.Table(tableDefinition);
+    var params = {
+      "IdentityId": "id0000001"
+    };
+    customers.delete(params, function(err, data) {
+      sinon.assert.called(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.delete);
+      expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.delete).to.have.been.calledWith({Key: {IdentityId: "id0000001"}, TableName: "StripeCashier-test"});
+      expect(err).to.not.exist();
+      expect(data).to.not.exist();
+      done();
+    });
+  });
+
+  it('should delete an item with advanced params', function(done) {
+    var fakeSaws = FakeSaws();
+    var deleteStub = sinon.stub().callsArgWith(1, null, {});
+    deleteStub.callsArgWith(1, null, null);
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.delete = deleteStub;
+
+    var customers = new fakeSaws.Table(tableDefinition);
+    var params = {
+      Key: {
+        IdentityId: "id0000001"
+      },
+      ReturnValues: 'ALL_OLD'
+    };
+    customers.delete(params, function(err, data) {
+      sinon.assert.called(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.delete);
+      expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.delete).to.have.been.calledWith({
+        TableName: "StripeCashier-test",
+        Key: {IdentityId: "id0000001"},
+        ReturnValues: 'ALL_OLD'
+      });
+      expect(err).to.not.exist();
+      expect(data).to.not.exist();
+      done();
+    });
+  });
+
+  it('should not accept extraneous properties to delete()', function(done) {
+    var fakeSaws = FakeSaws();
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.delete = sinon.stub();
+
+    var customers = new fakeSaws.Table(tableDefinition);
+    var params = {
+      "IdentityId": "id0000001",
+      "TooMany": "properties"
+    };
+    customers.delete(params, function(err, data) {
+      expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.delete).to.not.have.been.called();
+      expect(err).to.exist();
       done();
     });
   });
