@@ -132,8 +132,10 @@ describe('DynamoDB functions', function() {
   it('lookup() should retrieve a stored object', function(done) {
     var fakeSaws = FakeSaws();
     var getStub = sinon.stub().callsArgWith(1, null, {
-      "IdentityId": "id0000001",
-      "Name": "Rylo Ken"
+      "Item": {
+        "IdentityId": "id0000001",
+        "Name": "Rylo Ken"
+      }
     });
     fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get = getStub;
 
@@ -149,7 +151,24 @@ describe('DynamoDB functions', function() {
       expect(data.Name).to.equal('Rylo Ken');
       done();
     });
+  });
 
+  it('lookup() should work when no objects are found', function(done) {
+    var fakeSaws = FakeSaws();
+    var getStub = sinon.stub().callsArgWith(1, null, null);
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get = getStub;
+
+    var customers = new fakeSaws.Table(tableDefinition);
+    var params = {
+      "IdentityId": "id0000001"
+    };
+    customers.lookup(params, function(err, data) {
+      sinon.assert.calledOnce(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get );
+      expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.get).to.have.been.calledWith({Key: params, TableName: "StripeCashier-test"});
+      expect(err).to.be.not.ok;
+      expect(data).to.be.not.ok;
+      done();
+    });
   });
 
   it('should retrieve multiple stored objects with scan()', function(done) {
