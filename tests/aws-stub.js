@@ -1,5 +1,4 @@
 'use strict';
-var sinon = require('sinon');
 
 // Grabbed from https://github.com/aws/aws-sdk-js
 var services = [
