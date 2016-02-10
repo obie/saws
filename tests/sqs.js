@@ -2,9 +2,12 @@
 'use strict';
 var chai = require('chai');
 var sinon = require("sinon");
-chai.use(require("sinon-chai"));
 var expect = chai.expect;
+
 var AWSStub = require('./aws-stub');
+
+chai.use(require("sinon-chai"));
+chai.use(require("dirty-chai"));
 
 function FakeSaws() {
     var fake = {

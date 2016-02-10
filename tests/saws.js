@@ -5,9 +5,12 @@ var util = require('util');
 var _ = require('lodash');
 var chai = require('chai');
 var sinon = require("sinon");
-chai.use(require("sinon-chai"));
 var expect = chai.expect;
+
 var AWSStub = require('./aws-stub');
+
+chai.use(require("sinon-chai"));
+chai.use(require("dirty-chai"));
 
 describe('Saws', function() {
   var saws;
@@ -38,11 +41,11 @@ describe('Saws', function() {
     sinon.spy(console, 'log');
     saws.DEBUG('');
 
-    expect(console.log).to.not.have.been.called;
+    expect(console.log).to.not.have.been.called();
 
     process.env.SAWS_DEBUG = true;
     saws.DEBUG('');
-    expect(console.log).to.have.been.called;
+    expect(console.log).to.have.been.called();
 
     console.log.restore();
 

@@ -72,6 +72,33 @@ Then instantiate a `saws.Table` object using the params. Note that stage name is
 var customers = new saws.Table(STRIPE_CUSTOMERS_PARAMS);
 ```
 
+#### delete(item, cb)
+
+Delete a record from the table instance.
+
+```javascript
+// You can simply specify the key and value:
+
+customers.delete({
+  "IdentityId": "id0000001"
+}, function(err, data) {
+  ...
+});
+
+// Or to use the extended parameters supported by DynamoDB.DocumentClient.delete, specify all params;
+
+customers.delete({
+  "Key": {
+      "IdentityId": "id0000001"
+  },
+  "ReturnValues": "ALL_OLD"
+}, function(err, data) {
+  ...
+});
+```
+
+The `delete` operation accepts [the same paremeters as `DynamoDB.DocuemntClient.delete`](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property).
+
 #### save(item, cb)
 
 Use the table instance to save records.

@@ -30,6 +30,7 @@
   "devDependencies": {
     "aws-sdk": "^2.2.26",
     "chai": "^3.2.0",
+    "dirty-chai": "^1.2.2",
     "istanbul": "^0.4.2",
     "mocha": "^2.2.5",
     "sinon": "^1.17.2",

@@ -2,9 +2,12 @@
 'use strict';
 var chai = require('chai');
 var sinon = require("sinon");
-chai.use(require("sinon-chai"));
 var expect = chai.expect;
+
 var AWSStub = require('./aws-stub');
+
+chai.use(require("sinon-chai"));
+chai.use(require("dirty-chai"));
 
 function FakeSaws() {
     var fake = {
@@ -43,7 +46,7 @@ describe('SNS publishing', function() {
           expect(fakeSaws.AWS.SNS.prototype.createTopic).to.have.been.calledWith({
             Name: "NewOrders-test"
           });
-          expect(topic.arn).to.be.ok;
+          expect(topic.arn).to.exist();
           delete fakeSaws.AWS.SNS.prototype.publish;
           done();
       });
@@ -64,7 +67,7 @@ describe('SNS publishing', function() {
           Message: JSON.stringify({foo: "bar"})
         });
 
-        expect(fakeSaws.AWS.SNS.prototype.createTopic).to.not.have.been.called;
+        expect(fakeSaws.AWS.SNS.prototype.createTopic).to.not.have.been.called();
         done();
       });
     });
