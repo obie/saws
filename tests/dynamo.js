@@ -253,4 +253,50 @@ describe('DynamoDB functions', function() {
       done();
     });
   });
+
+  it('should retrieve stored objects with query()', function(done) {
+    var fakeSaws = FakeSaws();
+    var queryStub = sinon.stub().callsArgWith(1, null, {});
+    queryStub.callsArgWith(1, null, {Items: [{name: '1'}, {name: '2'}], NextMarker: 'The next'});
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.query = queryStub;
+
+    var customers = new fakeSaws.Table(tableDefinition);
+    var params = {
+      KeyConditionExpression: "IdentityId = :hkey",
+      ExpressionAttributeValues: { ":hkey" : "id0000001" }
+    };
+    customers.query(params, function(err, items) {
+      sinon.assert.called(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.query);
+      expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.query).to.have.been.calledWith({KeyConditionExpression: "IdentityId = :hkey",
+                                                                                            ExpressionAttributeValues: { ":hkey" : "id0000001" },
+                                                                                            TableName: "StripeCashier-test"});
+      expect(err).to.not.exist();
+      expect(items).to.be.instanceof(Array);
+      expect(items).to.have.length(2);
+      expect(items[0].name).to.be.equal('1');
+      done();
+    });
+  });
+
+  it('should work when no objects are found with query()', function(done) {
+    var fakeSaws = FakeSaws();
+    var queryStub = sinon.stub().callsArgWith(1, null, {});
+    queryStub.callsArgWith(1, null, null);
+    fakeSaws.AWS.DynamoDB.DocumentClient.prototype.query = queryStub;
+
+    var customers = new fakeSaws.Table(tableDefinition);
+    var params = {
+      KeyConditionExpression: "IdentityId = :hkey",
+      ExpressionAttributeValues: { ":hkey" : "id0000002" }
+    };
+    customers.query(params, function(err, items) {
+      sinon.assert.called(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.query);
+      expect(fakeSaws.AWS.DynamoDB.DocumentClient.prototype.query).to.have.been.calledWith({KeyConditionExpression: "IdentityId = :hkey",
+                                                                                            ExpressionAttributeValues: { ":hkey" : "id0000002" },
+                                                                                            TableName: "StripeCashier-test"});
+      expect(err).to.not.exist();
+      expect(items).to.not.exist();
+      done();
+    });
+  });
 });
